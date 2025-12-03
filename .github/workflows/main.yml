@@ -1,25 +1,21 @@
-name: Deploy to QA Developer Org (SF CLI)
+name: Deploy to QA Developer Org
 
 on:
   push:
     branches:
-      - main   # Trigger deployment when pushing to main
+      - main
 
 jobs:
   deploy-to-qa:
     runs-on: ubuntu-latest
 
     steps:
-
-    # Step 1: Checkout Code
-    - name: Checkout Repository
+    - name: Checkout code
       uses: actions/checkout@v3
 
-    # Step 2: Install Salesforce CLI (Latest)
-    - name: Install Salesforce CLI
-      uses: salesforcecli/action@v1
+    - name: Install SF CLI
+      uses: patrykacc/sf-cli-setup@v1.1.0
 
-    # Step 3: Authenticate to QA Org using Username + Password
     - name: Authenticate to QA Org
       run: |
         sf org login password \
@@ -29,8 +25,7 @@ jobs:
           --set-default \
           --alias QA
 
-    # Step 4: Deploy All Metadata from force-app
-    - name: Deploy Metadata to QA Org
+    - name: Deploy metadata to QA
       run: |
         sf project deploy start \
           --source-dir force-app \
