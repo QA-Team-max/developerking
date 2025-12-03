@@ -1,0 +1,24 @@
+name: Salesforce CI/CD Pipeline to QA
+
+on:
+  push:
+    branches:
+      - main  # triggers when code is pushed to main
+
+jobs:
+  pmd-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run PMD Static Code Analysis
+        run: |
+          pmd.bat check -d force-app/main/default -R pmd-ruleset.xml -f text
+
+  deploy-qa:
+    needs: pmd-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/che
