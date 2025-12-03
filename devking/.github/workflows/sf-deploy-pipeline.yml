@@ -1,24 +1,39 @@
-name: Salesforce CI/CD Pipeline to QA
+name: Deploy to QA Developer Org (SF CLI)
 
 on:
   push:
     branches:
-      - main  # triggers when code is pushed to main
+      - main   # Trigger deployment when pushing to main
 
 jobs:
-  pmd-check:
+  deploy-to-qa:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
 
-      - name: Run PMD Static Code Analysis
-        run: |
-          pmd.bat check -d force-app/main/default -R pmd-ruleset.xml -f text
-
-  deploy-qa:
-    needs: pmd-check
-    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/che
+
+    # Step 1: Checkout Code
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    # Step 2: Install Salesforce CLI (Latest)
+    - name: Install Salesforce CLI
+      uses: salesforcecli/action@v1
+
+    # Step 3: Authenticate to QA Org using Username + Password
+    - name: Authenticate to QA Org
+      run: |
+        sf org login password \
+          --username ${{ secrets.SF_USERNAME_QA }} \
+          --password ${{ secrets.SF_PASSWORD_QA }} \
+          --instance-url ${{ secrets.SF_LOGIN_URL }} \
+          --set-default \
+          --alias QA
+
+    # Step 4: Deploy All Metadata from force-app
+    - name: Deploy Metadata to QA Org
+      run: |
+        sf project deploy start \
+          --source-dir force-app \
+          --target-org QA \
+          --wait 10 \
+          --verbose
